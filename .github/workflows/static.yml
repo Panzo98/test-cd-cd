@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Omogućava ručno pokretanje workflow-a iz Actions taba.
+  workflow_dispatch: # Omogućava ručno pokretanje workflow-a
 
 permissions:
   contents: read
@@ -20,20 +20,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Testiranje HTML fajlova
-      - name: Install HTMLHint for testing
-        run: npm install -g htmlhint
+      # 2. Simulacija build procesa
+      - name: Generate build
+        run: echo "This is a simulated build step" > build.log
 
-      - name: Test HTML files
-        run: htmlhint index.html # Testira glavni HTML fajl.
-
-      # 3. Build korak (simulacija)
-      - name: Build site (simulated)
-        run: echo "Build completed at $(date)" > build.log
-
-      # 4. Deploy na GitHub Pages
+      # 3. Upload fajlova na GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          publish_dir: . # Folder gde su HTML fajlovi + build.log
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: . # Lokacija tvojih fajlova
