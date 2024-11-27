@@ -20,11 +20,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Simulacija build procesa
-      - name: Generate build
-        run: echo "This is a simulated build step" > build.log
+      # 2. Validacija HTML fajlova
+      - name: Install HTML validator
+        run: npm install -g htmlhint
 
-      # 3. Upload fajlova na GitHub Pages
+      - name: Validate HTML files
+        run: htmlhint '**/*.html'
+
+      # 3. Provera da li postoji index.html
+      - name: Check for index.html
+        run: |
+          if [ ! -f index.html ]; then
+            echo "index.html not found! Exiting..."
+            exit 1
+          fi
+
+      # 4. Simulacija build procesa
+      - name: Generate build
+        run: echo "Build completed at $(date)" > build.log
+
+      # 5. Provera veličine fajlova
+      - name: Check file sizes
+        run: |
+          MAX_SIZE=500000 # Maksimalna veličina fajla u bajtovima (500 KB)
+          for file in $(find . -type f); do
+            FILE_SIZE=$(stat -c%s "$file")
+            if [ $FILE_SIZE -gt $MAX_SIZE ]; then
+              echo "File $file is too large ($FILE_SIZE bytes)."
+              exit 1
+            fi
+          done
+
+      # 6. Provera validnosti JSON fajlova (ako ih ima)
+      - name: Validate JSON files
+        run: |
+          for file in $(find . -name '*.json'); do
+            if ! jq empty "$file" > /dev/null 2>&1; then
+              echo "Invalid JSON in file $file"
+              exit 1
+            fi
+          done
+
+      # 7. Upload fajlova na GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
